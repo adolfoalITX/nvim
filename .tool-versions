@@ -1,1 +1,3 @@
 ivm-node 24.14.1
+ivm-java openjdk-21.0.10
+ivm-maven 3.9.14

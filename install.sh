@@ -131,8 +131,7 @@ install_base_dependencies() {
   case "$pm" in
     apt)
       install_packages "$pm" \
-        git curl unzip tar gzip build-essential make ripgrep fd-find npm cargo luarocks \
-        openjdk-21-jdk maven xclip
+        git curl unzip tar gzip build-essential make ripgrep fd-find npm cargo luarocks xclip
       if ! need_cmd fd && need_cmd fdfind; then
         mkdir -p "$HOME/.local/bin"
         ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
@@ -140,23 +139,19 @@ install_base_dependencies() {
       ;;
     dnf)
       install_packages "$pm" \
-        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd-find npm cargo luarocks \
-        java-21-openjdk-devel maven xclip
+        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd-find npm cargo luarocks xclip
       ;;
     pacman)
       install_packages "$pm" \
-        git curl unzip tar gzip base-devel ripgrep fd npm cargo luarocks \
-        jdk21-openjdk maven xclip
+        git curl unzip tar gzip base-devel ripgrep fd npm cargo luarocks xclip
       ;;
     zypper)
       install_packages "$pm" \
-        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd npm cargo luarocks \
-        java-21-openjdk-devel maven xclip
+        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd npm cargo luarocks xclip
       ;;
     brew)
       install_packages "$pm" \
-        git curl unzip gnu-tar gzip make ripgrep fd node rust luarocks \
-        openjdk maven neovim
+        git curl unzip gnu-tar gzip make ripgrep fd node rust luarocks neovim
       ;;
   esac
 }
@@ -258,41 +253,63 @@ ensure_asdf() {
   . "$asdf_dir/asdf.sh"
 }
 
-install_node_from_tool_versions() {
+ensure_asdf_plugin() {
+  local plugin="$1"
+  if asdf plugin list | grep -qx "$plugin"; then
+    return
+  fi
+
+  log "Installing asdf plugin: $plugin"
+  asdf plugin add "$plugin"
+}
+
+tool_version_from_file() {
+  local tool="$1"
   local tool_versions="$SCRIPT_DIR/.tool-versions"
+
   if [ ! -f "$tool_versions" ]; then
     return
   fi
 
-  local plugin version
-  plugin="$(awk '/^ivm-node / { print $1 }' "$tool_versions" || true)"
-  version="$(awk '/^ivm-node / { print $2 }' "$tool_versions" || true)"
+  awk -v tool="$tool" '$1 == tool { print $2 }' "$tool_versions"
+}
 
-  if [ -z "$plugin" ] || [ -z "$version" ]; then
-    return
-  fi
+install_asdf_tool() {
+  local tool="$1"
+  local version="$2"
 
-  if [ "$plugin" != "ivm-node" ]; then
-    return
-  fi
-
-  log "Detected $plugin $version in .tool-versions"
-  log "Using system Node.js by default because $plugin is not a standard asdf plugin"
-
-  if need_cmd node; then
-    return
-  fi
+  [ -n "$version" ] || return
 
   ensure_asdf
+  ensure_asdf_plugin "$tool"
 
-  if ! asdf plugin list | grep -qx nodejs; then
-    log "Adding asdf nodejs plugin"
-    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-  fi
+  log "Installing $tool $version via asdf"
+  asdf install "$tool" "$version"
+  asdf set -u "$tool" "$version"
+}
 
-  log "Installing Node.js $version via asdf"
-  asdf install nodejs "$version"
-  asdf set -u nodejs "$version"
+install_node_from_tool_versions() {
+  local version
+  version="$(tool_version_from_file ivm-node || true)"
+  [ -n "$version" ] || return
+
+  install_asdf_tool ivm-node "$version"
+}
+
+install_java_from_tool_versions() {
+  local version
+  version="$(tool_version_from_file ivm-java || true)"
+  [ -n "$version" ] || return
+
+  install_asdf_tool ivm-java "$version"
+}
+
+install_maven_from_tool_versions() {
+  local version
+  version="$(tool_version_from_file ivm-maven || true)"
+  [ -n "$version" ] || return
+
+  install_asdf_tool ivm-maven "$version"
 }
 
 bootstrap_neovim() {
@@ -318,6 +335,8 @@ main() {
   install_base_dependencies "$pm"
   ensure_nvim "$pm"
   install_node_from_tool_versions
+  install_java_from_tool_versions
+  install_maven_from_tool_versions
   ensure_tree_sitter_cli
 
   need_cmd nvim || fail "nvim is still not available after installation"
