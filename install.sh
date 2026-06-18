@@ -9,6 +9,33 @@ log() {
   printf '[install] %s\n' "$*"
 }
 
+print_banner() {
+  local cyan="" magenta="" green="" dim="" bold="" reset=""
+
+  if [ -t 1 ] && [ "${TERM:-}" != "dumb" ]; then
+    cyan="$(printf '\033[1;36m')"
+    magenta="$(printf '\033[1;35m')"
+    green="$(printf '\033[1;32m')"
+    dim="$(printf '\033[2m')"
+    bold="$(printf '\033[1m')"
+    reset="$(printf '\033[0m')"
+  fi
+
+  cat <<EOF
+${magenta}::================================================================::${reset}
+${cyan}███╗   ██╗██╗   ██╗██╗███╗   ███╗${magenta}    ███╗   ██╗███████╗ ██████╗ ███╗   ██╗${reset}
+${cyan}████╗  ██║██║   ██║██║████╗ ████║${magenta}    ████╗  ██║██╔════╝██╔═══██╗████╗  ██║${reset}
+${cyan}██╔██╗ ██║██║   ██║██║██╔████╔██║${magenta}    ██╔██╗ ██║█████╗  ██║   ██║██╔██╗ ██║${reset}
+${cyan}██║╚██╗██║╚██╗ ██╔╝██║██║╚██╔╝██║${magenta}    ██║╚██╗██║██╔══╝  ██║   ██║██║╚██╗██║${reset}
+${cyan}██║ ╚████║ ╚████╔╝ ██║██║ ╚═╝ ██║${magenta}    ██║ ╚████║███████╗╚██████╔╝██║ ╚████║${reset}
+${cyan}╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝     ╚═╝${magenta}    ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝${reset}
+${magenta}::================================================================::${reset}
+${bold}${green}                 [ bootstrapping your editor rig ]${reset}
+${dim}                    plugins, lsp, treesitter, toolchain${reset}
+
+EOF
+}
+
 fail() {
   printf '[install] ERROR: %s\n' "$*" >&2
   exit 1
@@ -280,6 +307,7 @@ bootstrap_neovim() {
 }
 
 main() {
+  print_banner
   ensure_path_contains_local_bin
   export XDG_CONFIG_HOME="$CONFIG_HOME_DIR"
 
