@@ -1,0 +1,11 @@
+.DS_Store
+*.swp
+*.swo
+*~
+.netrwhist
+.luarc.json
+.luarc.jsonc
+.styluaignore
+.idea/
+.vscode/
+Session.vim
