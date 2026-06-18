@@ -187,8 +187,6 @@ install_neovim_from_tarball() {
   tmp_dir="$(mktemp -d)"
   install_dir="$tmp_dir/nvim"
 
-  trap 'rm -rf "$tmp_dir"' RETURN
-
   log "Installing Neovim from official tarball"
   mkdir -p "$HOME/.local/opt" "$HOME/.local/bin"
   curl -fsSL "$url" -o "$tmp_dir/$archive_name"
@@ -198,6 +196,7 @@ install_neovim_from_tarball() {
   rm -rf "$target_dir"
   mv "$install_dir"/* "$target_dir"
   ln -sf "$target_dir/bin/nvim" "$HOME/.local/bin/nvim"
+  rm -rf "$tmp_dir"
 }
 
 ensure_nvim() {
