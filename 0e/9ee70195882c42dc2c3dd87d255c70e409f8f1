@@ -1,0 +1,21 @@
+.tool-versions
+  s_7ca91044a7a520::t_1736ed6c8ee5d5 2-3
+install.sh
+  s_7ca91044a7a520::t_1736ed6c8ee5d5 134,142,146,150,154,256-258,262-264,266-268,270,274-275,277-281,284,286-310,312,338-339
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "0e9ee70195882c42dc2c3dd87d255c70e409f8f1",
+  "prompts": {},
+  "sessions": {
+    "s_7ca91044a7a520": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_12418dc96ffeX6oYAKgz9KC8P4",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
