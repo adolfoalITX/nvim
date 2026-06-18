@@ -1,0 +1,19 @@
+install.sh
+  s_82a61872e39f86::t_b6a5c10c8fe796 12-38,310
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "3d30e1008406d83617df18b24e8769a8ad29361a",
+  "prompts": {},
+  "sessions": {
+    "s_82a61872e39f86": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_12365682dffebiKgOV5EdAmzt0",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
