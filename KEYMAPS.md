@@ -66,6 +66,7 @@
 - `]h`: siguiente hunk
 - `<leader>gb`: blame línea
 - `<leader>gD`: diff del buffer
+- `<leader>gq`: salir del modo diff
 - `<leader>gp`: preview hunk
 - `<leader>gr`: reset hunk
 - `<leader>gs`: stage hunk
@@ -267,7 +268,8 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 3. `<leader>gp` para preview.
 4. `<leader>gs` para stage parcial.
 5. `<leader>gD` para diff del buffer.
-6. `<leader>gb` para blame.
+6. `<leader>gq` para salir del modo diff.
+7. `<leader>gb` para blame.
 
 ### Terminal
 
