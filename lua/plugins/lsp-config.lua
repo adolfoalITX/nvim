@@ -47,7 +47,7 @@ return {
           local has_support = function(method)
             local clients = vim.lsp.get_clients({ bufnr = ev.buf })
             for _, client in ipairs(clients) do
-              if client.supports_method(method) then
+              if client:supports_method(method, ev.buf) then
                 return true
               end
             end

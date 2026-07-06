@@ -33,7 +33,7 @@ local function find_root_dir()
     return vim.fs.dirname(root)
   end
 
-  return nil
+  return dir
 end
 
 local function find_lombok_jar()
@@ -69,6 +69,7 @@ if not root_dir then
 end
 
 local cmd = { "jdtls", "--jvm-arg=-Xms512m", "--jvm-arg=-Xmx2g" }
+
 local lombok_jar = find_lombok_jar()
 
 if lombok_jar then
