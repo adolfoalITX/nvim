@@ -10,6 +10,7 @@
 - `<leader>e`: explorer
 - `<leader>f`: find
 - `<leader>g`: git
+- `<leader>m`: markdown
 - `<leader>r`: rest
 - `<leader>t`: terminal
 - `<leader>w`: windows
@@ -72,6 +73,10 @@
 - `<leader>gs`: stage hunk
 - `<leader>gS`: stage buffer
 - `<leader>gu`: undo stage hunk
+
+### Markdown
+
+- `<leader>mp`: abrir/cerrar `markdown-preview.nvim` en el navegador
 
 ### REST
 
@@ -185,6 +190,9 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 - `:Lazy`: gestor de plugins
 - `:Mason`: instalador de LSP/tools
 - `:LspInfo`: estado de LSP
+- `:MarkdownPreview`: abrir preview de Markdown en navegador
+- `:MarkdownPreviewStop`: cerrar preview activa
+- `:MarkdownPreviewToggle`: abrir/cerrar preview
 - `:Telescope`: lanzar Telescope manualmente
 - `:Neotree toggle left`: abrir/cerrar árbol
 - `:Trouble diagnostics toggle`: diagnósticos en panel

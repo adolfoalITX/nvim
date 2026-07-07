@@ -166,6 +166,48 @@ ensure_tree_sitter_cli() {
   sudo_if_needed npm install -g tree-sitter-cli
 }
 
+has_url_opener() {
+  if need_cmd xdg-open; then
+    return 0
+  fi
+
+  if need_cmd gio; then
+    return 0
+  fi
+
+  if need_cmd open; then
+    return 0
+  fi
+
+  return 1
+}
+
+ensure_url_opener() {
+  local pm="$1"
+
+  if has_url_opener; then
+    return
+  fi
+
+  log "Installing a URL opener for markdown preview"
+
+  case "$pm" in
+    apt|dnf|pacman|zypper)
+      install_packages "$pm" xdg-utils
+      ;;
+    brew)
+      if ! has_url_opener; then
+        fail "No URL opener found. Install xdg-open, gio or open manually."
+      fi
+      ;;
+    *)
+      fail "Unsupported package manager: $pm"
+      ;;
+  esac
+
+  has_url_opener || fail "No URL opener found after installation"
+}
+
 install_neovim_from_tarball() {
   local arch archive_name install_dir target_dir url tmp_dir
 
@@ -311,9 +353,36 @@ install_maven_from_tool_versions() {
   install_asdf_tool ivm-maven "$version"
 }
 
+install_markdown_preview_binary() {
+  local data_home plugin_dir version
+
+  data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+  plugin_dir="$data_home/nvim/lazy/markdown-preview.nvim"
+
+  if [ ! -d "$plugin_dir/app" ]; then
+    fail "markdown-preview.nvim was not restored under $plugin_dir"
+  fi
+
+  version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$plugin_dir/package.json" | head -n 1)"
+  [ -n "$version" ] || fail "Could not detect markdown-preview.nvim version"
+
+  if [ -x "$plugin_dir/app/bin/markdown-preview-linux" ] || [ -x "$plugin_dir/app/bin/markdown-preview-macos" ] || [ -x "$plugin_dir/app/bin/markdown-preview-macos-arm64" ]; then
+    log "markdown-preview.nvim binary already present"
+    return
+  fi
+
+  log "Installing markdown-preview.nvim prebuilt binary v$version"
+  (
+    cd "$plugin_dir/app"
+    ./install.sh "v$version"
+  )
+}
+
 bootstrap_neovim() {
   log "Restoring plugins from lazy-lock.json"
   nvim --headless '+Lazy! restore' +qa
+
+  install_markdown_preview_binary
 
   log "Updating Tree-sitter parsers"
   nvim --headless '+TSUpdateSync' +qa
@@ -332,6 +401,7 @@ main() {
   log "Using package manager: $pm"
 
   install_base_dependencies "$pm"
+  ensure_url_opener "$pm"
   ensure_nvim "$pm"
   install_node_from_tool_versions
   install_java_from_tool_versions

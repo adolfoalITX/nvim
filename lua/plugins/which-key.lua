@@ -12,6 +12,7 @@ return {
         { "<leader>e", group = "explorer" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },
+        { "<leader>m", group = "markdown" },
         { "<leader>r", group = "rest" },
         { "<leader>t", group = "terminal", mode = { "n", "t" } },
         { "<leader>t<Esc>", desc = "Terminal normal mode", mode = "t" },
