@@ -10,6 +10,7 @@
 - `<leader>e`: explorer
 - `<leader>f`: find
 - `<leader>g`: git
+- `<leader>i`: abrir externamente
 - `<leader>m`: markdown
 - `<leader>r`: rest
 - `<leader>t`: terminal
@@ -30,6 +31,7 @@
 - `K`: hover de LSP
 - `<leader>ca`: code action
 - `<leader>cd`: definition
+- `<leader>cf`: format (LSP)
 - `<leader>ci`: implementation
 - `<leader>cn`: rename
 - `<leader>co`: overview LSP en `Trouble`
@@ -74,6 +76,10 @@
 - `<leader>gS`: stage buffer
 - `<leader>gu`: undo stage hunk
 
+### Abrir externamente
+
+- `<leader>io`: abrir el archivo actual con la aplicación predeterminada del sistema
+
 ### Markdown
 
 - `<leader>mp`: abrir/cerrar `markdown-preview.nvim` en el navegador
@@ -83,6 +89,7 @@
 - `<leader>rr`: ejecutar petición bajo el cursor en fichero `.http` o `.rest`
 - `<leader>ra`: ejecutar todas las peticiones del fichero
 - `<leader>ro`: abrir panel de respuesta de `Kulala`
+- `<leader>rc`: cerrar panel de respuesta de `Kulala`
 - `<leader>re`: seleccionar entorno activo para el fichero `.http`
 
 ### Terminal
@@ -256,10 +263,11 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 
 1. `K` para hover.
 2. `<leader>cd` para definition.
-3. `<leader>ci` para implementation.
-4. `<leader>cr` para referencias.
-5. `<leader>ca` para code action.
-6. `<leader>cn` para rename.
+3. `<leader>cf` para format.
+4. `<leader>ci` para implementation.
+5. `<leader>cr` para referencias.
+6. `<leader>ca` para code action.
+7. `<leader>cn` para rename.
 
 ### Diagnósticos
 

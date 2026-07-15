@@ -28,6 +28,14 @@ return {
         desc = "REST open response",
       },
       {
+        "<leader>rc",
+        function()
+          require("kulala").close()
+        end,
+        ft = { "http", "rest" },
+        desc = "REST close response",
+      },
+      {
         "<leader>re",
         function()
           require("kulala").set_selected_env()

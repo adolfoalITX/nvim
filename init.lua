@@ -69,6 +69,9 @@ vim.keymap.set("n", "<leader>bd", close_buffer_preserve_layout, { desc = "Buffer
 vim.keymap.set("n", "<leader>bn", "<cmd>bnext<cr>", { desc = "Buffer next" })
 vim.keymap.set("n", "<leader>bp", "<cmd>bprevious<cr>", { desc = "Buffer previous" })
 vim.keymap.set("n", "<leader>r", "<Nop>", { desc = "REST" })
+vim.keymap.set("n", "<leader>io", function()
+  vim.fn.jobstart({ "gio", "open", vim.fn.expand("%:p") }, { detach = true })
+end, { desc = "Open current file externally" })
 
 vim.keymap.set("n", "<leader>ws", "<cmd>split<cr>", { desc = "Window split horizontal" })
 vim.keymap.set("n", "<leader>wv", "<cmd>vsplit<cr>", { desc = "Window split vertical" })

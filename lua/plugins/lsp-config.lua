@@ -74,6 +74,9 @@ return {
           })
 
           map("n", "<leader>cd", safe_lsp_call("textDocument/definition", vim.lsp.buf.definition), "Code: Definition")
+          map("n", "<leader>cf", safe_lsp_call("textDocument/formatting", function()
+            vim.lsp.buf.format({ async = true })
+          end), "Code: Format")
           map("n", "<leader>ci", safe_lsp_call("textDocument/implementation", vim.lsp.buf.implementation), "Code: Implementation")
           map("n", "<leader>cn", safe_lsp_call("textDocument/rename", vim.lsp.buf.rename), "Code: Rename")
           map("n", "<leader>cr", safe_lsp_call("textDocument/references", vim.lsp.buf.references), "Code: References")

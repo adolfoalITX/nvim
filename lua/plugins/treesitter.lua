@@ -19,10 +19,11 @@ return {
         'typescript',
         'tsx',
         'css',
-       'html',
-         'markdown',
-         'markdown_inline',
-         'gitignore',
+        'html',
+        'http',
+        'markdown',
+        'markdown_inline',
+        'gitignore',
         'vim',
         'lua',
       },
@@ -32,10 +33,6 @@ return {
         enable = true,
         additional_vim_regex_highlighting = false,
         disable = function(lang, bufnr)
-          if lang == 'http' then
-            return true
-          end
-
           local max = 250 * 1024
           local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(bufnr))
           return ok and stats and stats.size > max
