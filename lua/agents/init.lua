@@ -9,6 +9,21 @@ local state = {
   terminal_target = nil,
 }
 
+local highlights = {
+  header = "AgentsHeader",
+  project = "AgentsProject",
+  workspace = "AgentsWorkspace",
+  active_workspace = "AgentsActiveWorkspace",
+  branch = "AgentsBranch",
+  opencode = "AgentsOpenCode",
+  code = "AgentsVSCode",
+  terminal = "AgentsTerminal",
+  running = "AgentsRunning",
+  stopped = "AgentsStopped",
+}
+
+local namespace = vim.api.nvim_create_namespace("agents_panel")
+
 local function is_dir(path)
   local stat = vim.uv.fs_stat(path)
   return stat and stat.type == "directory"
@@ -114,6 +129,16 @@ local function window_icon(window)
   return ">_"
 end
 
+local function window_highlight(window)
+  if window.kind == "code" or (window.kind == "" and window.name == "code") then
+    return highlights.code
+  end
+  if window.kind == "opencode" or (window.kind == "" and window.name == "opencode") then
+    return highlights.opencode
+  end
+  return highlights.terminal
+end
+
 local function process_file(project)
   local key = vim.fn.sha256(project.path):sub(1, 16)
   return vim.fn.stdpath("state") .. "/agents-aicontext-" .. key
@@ -153,7 +178,7 @@ end
 
 local function project_status(project)
   local pid = aicontext_pid(project)
-  return pid and "●" or "○"
+  return pid and "●" or "○", pid and highlights.running or highlights.stopped
 end
 
 local function project_label(project)
@@ -167,13 +192,15 @@ local function refresh()
 
   local lines = {}
   local items = {}
-  local function add(line, item)
+  local row_highlights = {}
+  local function add(line, item, segments)
     table.insert(lines, line)
     items[#lines] = item
+    row_highlights[#lines] = segments
   end
 
   local root = projects_root()
-  add(" Agents workspaces", { kind = "header" })
+  add(" AGENTS", { kind = "header" }, { { 0, -1, highlights.header } })
   if not root or root == "" then
     add(" NVIM_PROJECTS_ROOT is not set", { kind = "message" })
   elseif not is_dir(root) then
@@ -182,25 +209,41 @@ local function refresh()
     for _, project in ipairs(projects()) do
       local selected = state.selected_project and state.selected_project.path == project.path
       local label = "[ " .. project_label(project) .. " ]"
-      add("| " .. label .. " | " .. project_status(project), {
+      local status, status_highlight = project_status(project)
+      local line = "  " .. label .. "  " .. status
+      add(line, {
         kind = "project",
         project = project,
+      }, {
+        { 2, 2 + #label, highlights.project },
+        { #line - #status, #line, status_highlight },
       })
       if selected then
         for _, workspace in ipairs(workspaces(project)) do
           local active = state.selected_workspace and state.selected_workspace.path == workspace.path
-          add((active and "| * " or "| + ") .. workspace.name, {
+          local line = "  ├─ " .. workspace.name
+          add(line, {
             kind = "workspace",
             project = project,
             workspace = workspace,
+          }, {
+            { 2, 5, highlights.branch },
+            { 5, -1, active and highlights.active_workspace or highlights.workspace },
           })
           if active then
-            for _, window in ipairs(tmux_windows(workspace)) do
-              add("|   " .. (window.active and "* " or "- ") .. window_icon(window) .. " " .. window.name, {
+            local windows = tmux_windows(workspace)
+            for index, window in ipairs(windows) do
+              local connector = index == #windows and "     └─ " or "     ├─ "
+              local icon = window_icon(window)
+              local line = connector .. icon .. " " .. window.name
+              add(line, {
                 kind = "window",
                 project = project,
                 workspace = workspace,
                 window = window,
+              }, {
+                { 5, 8, highlights.branch },
+                { 8, -1, window_highlight(window) },
               })
             end
           end
@@ -211,8 +254,27 @@ local function refresh()
 
   vim.bo[state.panel_buf].modifiable = true
   vim.api.nvim_buf_set_lines(state.panel_buf, 0, -1, false, lines)
+  vim.api.nvim_buf_clear_namespace(state.panel_buf, namespace, 0, -1)
+  for row, segments in pairs(row_highlights) do
+    for _, segment in ipairs(segments or {}) do
+      vim.api.nvim_buf_add_highlight(state.panel_buf, namespace, segment[3], row - 1, segment[1], segment[2])
+    end
+  end
   vim.b[state.panel_buf].agents_items = items
   vim.bo[state.panel_buf].modifiable = false
+end
+
+local function setup_highlights()
+  vim.api.nvim_set_hl(0, highlights.header, { fg = "#89b4fa", bold = true })
+  vim.api.nvim_set_hl(0, highlights.project, { fg = "#cba6f7", bold = true })
+  vim.api.nvim_set_hl(0, highlights.workspace, { fg = "#bac2de" })
+  vim.api.nvim_set_hl(0, highlights.active_workspace, { fg = "#f9e2af", bold = true })
+  vim.api.nvim_set_hl(0, highlights.branch, { fg = "#585b70" })
+  vim.api.nvim_set_hl(0, highlights.opencode, { fg = "#a6e3a1" })
+  vim.api.nvim_set_hl(0, highlights.code, { fg = "#89b4fa" })
+  vim.api.nvim_set_hl(0, highlights.terminal, { fg = "#fab387" })
+  vim.api.nvim_set_hl(0, highlights.running, { fg = "#a6e3a1", bold = true })
+  vim.api.nvim_set_hl(0, highlights.stopped, { fg = "#6c7086" })
 end
 
 local function clear_terminal()
@@ -338,18 +400,76 @@ local function rename_window(workspace, window)
 end
 
 local function show_project_info(project)
+  local workspace_count = #workspaces(project)
+  local session_count = 0
+  for _, workspace in ipairs(workspaces(project)) do
+    session_count = session_count + #tmux_windows(workspace)
+  end
+  local info = aicontext_info(project)
   local buf = vim.api.nvim_create_buf(false, true)
-  local line = " Project: " .. project.name .. " "
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { line })
-  local width = vim.api.nvim_strwidth(line)
+  local lines = {
+    " " .. project.name,
+    " " .. project.path,
+    " " .. workspace_count .. " workspaces | " .. session_count .. " sessions",
+    " aicontext: " .. (info and ("http://127.0.0.1:" .. info.port) or "stopped"),
+  }
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  local width = 0
+  for _, line in ipairs(lines) do
+    width = math.max(width, vim.api.nvim_strwidth(line))
+  end
   local win = vim.api.nvim_open_win(buf, false, {
     relative = "cursor",
     row = 1,
     col = 0,
     width = width,
-    height = 1,
+    height = #lines,
     style = "minimal",
     border = "rounded",
+    focusable = false,
+  })
+  vim.bo[buf].bufhidden = "wipe"
+  vim.api.nvim_create_autocmd({ "CursorMoved", "WinLeave", "BufLeave" }, {
+    buffer = state.panel_buf,
+    once = true,
+    callback = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+  })
+end
+
+local function show_help()
+  local lines = {
+    " Agents shortcuts",
+    " Enter / Click  Expand or open",
+    " o              New OpenCode session",
+    " c              Open workspace in VS Code",
+    " t              New terminal session",
+    " r              Rename selected session",
+    " d              Close selected session",
+    " a / x          Start / stop aicontext",
+    " i              Project information",
+    " R              Refresh panel",
+  }
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  local width = 0
+  for _, line in ipairs(lines) do
+    width = math.max(width, vim.api.nvim_strwidth(line))
+  end
+  local win = vim.api.nvim_open_win(buf, false, {
+    relative = "win",
+    win = vim.api.nvim_get_current_win(),
+    row = 1,
+    col = 1,
+    width = width,
+    height = #lines,
+    style = "minimal",
+    border = "rounded",
+    title = " Help ",
+    title_pos = "center",
     focusable = false,
   })
   vim.bo[buf].bufhidden = "wipe"
@@ -473,6 +593,8 @@ function M.open()
   vim.bo[state.panel_buf].swapfile = false
   vim.bo[state.panel_buf].modifiable = false
   vim.bo[state.panel_buf].filetype = "agents"
+  vim.wo.cursorline = true
+  vim.wo.winbar = " Agents  |  h Help"
   vim.api.nvim_buf_set_name(state.panel_buf, "Agents")
   vim.keymap.set("n", "<CR>", select_current, { buffer = state.panel_buf, desc = "Agents select" })
   vim.keymap.set("n", "<LeftMouse>", select_current, { buffer = state.panel_buf, desc = "Agents select" })
@@ -504,12 +626,15 @@ function M.open()
       vim.notify("Select a project first", vim.log.levels.WARN)
     end
   end, { buffer = state.panel_buf, desc = "Agents project information" })
+  vim.keymap.set("n", "h", show_help, { buffer = state.panel_buf, desc = "Agents shortcuts" })
   vim.keymap.set("n", "a", function() with_project(start_aicontext) end, { buffer = state.panel_buf, desc = "Agents start aicontext" })
   vim.keymap.set("n", "x", function() with_project(stop_aicontext) end, { buffer = state.panel_buf, desc = "Agents stop aicontext" })
   refresh()
 end
 
 function M.setup()
+  setup_highlights()
+  vim.api.nvim_create_autocmd("ColorScheme", { callback = setup_highlights })
   vim.keymap.set("n", "<leader>aa", M.open, { desc = "Agents panel" })
   vim.keymap.set("n", "<leader>as", function() with_project(start_aicontext) end, { desc = "Agents start aicontext" })
   vim.keymap.set("n", "<leader>ax", function() with_project(stop_aicontext) end, { desc = "Agents stop aicontext" })
