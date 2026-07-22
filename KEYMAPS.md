@@ -5,6 +5,7 @@
 ## Esquema general
 
 - `<leader>b`: buffers
+- `<leader>a`: agents (perfil `agents`)
 - `<leader>c`: code
 - `<leader>d`: diagnostics
 - `<leader>e`: explorer
@@ -25,6 +26,37 @@
 - `<leader>bd`: cerrar buffer actual preservando el layout
 - `<leader>bn`: siguiente buffer
 - `<leader>bp`: buffer anterior
+
+### Agents (perfil `agents`)
+
+Iniciar el perfil indicando la carpeta que contiene los proyectos:
+
+```bash
+NVIM_PROJECTS_ROOT="$HOME/proyectos" nvim --cmd 'let g:nvim_profile = "agents"'
+```
+
+La estructura esperada es `NVIM_PROJECTS_ROOT/proyecto/runtimes/workspace`.
+Cada workspace usa una sesión tmux persistente y cada agente o terminal es una ventana de esa sesión.
+
+- `<leader>aa`: abrir el panel de proyectos, workspaces y sesiones
+- `<leader>as`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
+- `<leader>ax`: detener el proceso `aicontext console` del proyecto seleccionado
+- `<leader>aD`: cerrar todas las sesiones tmux de agentes y sus terminales
+- `<C-w>h/j/k/l` o `<C-w>` con flechas: cambiar entre paneles, también desde una terminal
+- `<leader>t<Esc>`: salir del modo terminal sin cerrar la sesión
+
+Dentro del panel `Agents`:
+
+- `Enter` o clic: expandir proyecto/workspace o enfocar la sesión tmux seleccionada
+- `r`: renombrar la sesión tmux seleccionada
+- `R`: refrescar proyectos, workspaces y sesiones
+- `o`: crear una ventana tmux con `opencode` en el workspace seleccionado
+- `c`: abrir `code .` en el workspace seleccionado
+- `t`: crear una terminal normal en el workspace seleccionado
+- `d`: cerrar la sesión tmux seleccionada
+- `i`: mostrar el nombre completo del proyecto seleccionado
+- `a`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
+- `x`: detener `aicontext console` para el proyecto seleccionado
 
 ### Code
 

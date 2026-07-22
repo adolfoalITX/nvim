@@ -1,3 +1,8 @@
+if require("config.profile").is_agents() then
+  require("config.agents")
+  return
+end
+
 vim.cmd("set expandtab")
 vim.cmd("set tabstop=2")
 vim.cmd("set softtabstop=2")
