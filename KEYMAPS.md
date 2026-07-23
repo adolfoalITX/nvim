@@ -2,10 +2,64 @@
 
 `<leader>` = `Space`
 
-## Esquema general
+## Perfil `agents`
+
+Iniciar el perfil con la carpeta raíz de proyectos:
+
+```bash
+NVIM_PROJECTS_ROOT="$HOME/proyectos" nvim --cmd 'let g:nvim_profile = "agents"'
+```
+
+Estructura esperada:
+
+```text
+NVIM_PROJECTS_ROOT/
+  proyecto/
+    runtimes/
+      workspace/
+```
+
+Cada workspace usa una sesión tmux persistente. Cada agente o terminal es una ventana de esa sesión.
+
+### Globales
+
+- `<leader>aa`: abrir el panel de proyectos, workspaces y sesiones
+- `<leader>as`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
+- `<leader>ax`: detener el proceso `aicontext console` del proyecto seleccionado
+- `<leader>aD`: cerrar todas las sesiones tmux de agentes y sus terminales
+- `<C-w>h/j/k/l` o `<C-w>` con flechas: cambiar entre paneles, también desde una terminal
+- `<leader>t<Esc>`: salir del modo terminal sin cerrar la sesión
+
+### Panel `Agents`
+
+- `Enter` o clic: expandir proyecto/workspace o enfocar la sesión tmux seleccionada
+- `p`: crear un proyecto y su carpeta `runtimes`
+- `D`: borrar recursivamente el proyecto seleccionado tras confirmación
+- `r`: renombrar la sesión tmux seleccionada
+- `R`: refrescar proyectos, workspaces y sesiones
+- `o`: crear una ventana tmux con `opencode` en el workspace seleccionado
+- `c`: abrir `code .` en el workspace seleccionado
+- `t`: crear una terminal normal en el workspace seleccionado
+- `d`: cerrar la sesión tmux seleccionada
+- `i`: mostrar el nombre completo del proyecto seleccionado
+- `h`: mostrar ayuda contextual del panel
+- `a`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
+- `x`: detener `aicontext console` para el proyecto seleccionado
+
+### Comandos
+
+- `:Agents`: abrir o enfocar el panel
+- `:AgentsAicontextStart`: iniciar o reutilizar `aicontext` del proyecto seleccionado
+- `:AgentsAicontextStop`: detener `aicontext` del proyecto seleccionado
+- `:AgentsCloseAll`: cerrar todas las sesiones tmux gestionadas por el perfil
+
+## Perfil `default`
+
+Iniciar con `nvim`. Los atajos de las siguientes secciones no están disponibles en el perfil `agents`.
+
+### Esquema general
 
 - `<leader>b`: buffers
-- `<leader>a`: agents (perfil `agents`)
 - `<leader>c`: code
 - `<leader>d`: diagnostics
 - `<leader>e`: explorer
@@ -17,8 +71,6 @@
 - `<leader>t`: terminal
 - `<leader>w`: windows
 
-## Atajos actuales
-
 ### Buffers
 
 - `<leader>ba`: cerrar todos los buffers preservando el layout
@@ -26,37 +78,6 @@
 - `<leader>bd`: cerrar buffer actual preservando el layout
 - `<leader>bn`: siguiente buffer
 - `<leader>bp`: buffer anterior
-
-### Agents (perfil `agents`)
-
-Iniciar el perfil indicando la carpeta que contiene los proyectos:
-
-```bash
-NVIM_PROJECTS_ROOT="$HOME/proyectos" nvim --cmd 'let g:nvim_profile = "agents"'
-```
-
-La estructura esperada es `NVIM_PROJECTS_ROOT/proyecto/runtimes/workspace`.
-Cada workspace usa una sesión tmux persistente y cada agente o terminal es una ventana de esa sesión.
-
-- `<leader>aa`: abrir el panel de proyectos, workspaces y sesiones
-- `<leader>as`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
-- `<leader>ax`: detener el proceso `aicontext console` del proyecto seleccionado
-- `<leader>aD`: cerrar todas las sesiones tmux de agentes y sus terminales
-- `<C-w>h/j/k/l` o `<C-w>` con flechas: cambiar entre paneles, también desde una terminal
-- `<leader>t<Esc>`: salir del modo terminal sin cerrar la sesión
-
-Dentro del panel `Agents`:
-
-- `Enter` o clic: expandir proyecto/workspace o enfocar la sesión tmux seleccionada
-- `r`: renombrar la sesión tmux seleccionada
-- `R`: refrescar proyectos, workspaces y sesiones
-- `o`: crear una ventana tmux con `opencode` en el workspace seleccionado
-- `c`: abrir `code .` en el workspace seleccionado
-- `t`: crear una terminal normal en el workspace seleccionado
-- `d`: cerrar la sesión tmux seleccionada
-- `i`: mostrar el nombre completo del proyecto seleccionado
-- `a`: iniciar o reutilizar `aicontext console` para el proyecto seleccionado
-- `x`: detener `aicontext console` para el proyecto seleccionado
 
 ### Code
 
@@ -177,7 +198,7 @@ Después, esa terminal concreta mantiene su propio directorio mientras siga viva
 - `<C-+>`: expandir por scope
 - `<C-->`: reducir selección
 
-## Defaults importantes de plugins
+## Defaults De Plugins (`default`)
 
 ### Comment.nvim
 
@@ -206,7 +227,7 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 - `q`: cerrar panel
 - `R`: refrescar
 
-## Comandos importantes
+## Comandos (`default`)
 
 ### Neovim
 
@@ -239,7 +260,7 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 - `:TodoTelescope`: buscar TODOs
 - `:lua require("kulala").run()`: ejecutar petición actual
 
-## Atajos nativos de Neovim importantes
+## Atajos Nativos Comunes
 
 ### Movimiento
 
@@ -282,7 +303,7 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 - `:bnext`: siguiente buffer
 - `:bprev`: buffer anterior
 
-## Flujo recomendado
+## Flujos Recomendados (`default`)
 
 ### Buscar y abrir
 

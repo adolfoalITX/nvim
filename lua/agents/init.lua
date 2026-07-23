@@ -444,6 +444,8 @@ local function show_help()
   local lines = {
     " Agents shortcuts",
     " Enter / Click  Expand or open",
+    " p              New project",
+    " D              Delete selected project",
     " o              New OpenCode session",
     " c              Open workspace in VS Code",
     " t              New terminal session",
@@ -539,6 +541,77 @@ local function kill_all_sessions()
   refresh()
 end
 
+local function create_project()
+  local root = projects_root()
+  if not root or root == "" or not is_dir(root) then
+    vim.notify("NVIM_PROJECTS_ROOT must point to an existing directory", vim.log.levels.ERROR)
+    return
+  end
+  vim.ui.input({ prompt = "Project name: " }, function(name)
+    if not name or name == "" then
+      return
+    end
+    if name == "." or name == ".." or name:find("[/\\]") then
+      vim.notify("Project name cannot contain path separators", vim.log.levels.ERROR)
+      return
+    end
+    local project = { name = name, path = root .. "/" .. name }
+    if is_dir(project.path) then
+      vim.notify("Project already exists: " .. name, vim.log.levels.WARN)
+      return
+    end
+    if vim.fn.mkdir(project.path .. "/runtimes", "p") == 0 then
+      vim.notify("Could not create project: " .. name, vim.log.levels.ERROR)
+      return
+    end
+    state.selected_project = project
+    state.selected_workspace = nil
+    refresh()
+    vim.notify("Created project: " .. name)
+  end)
+end
+
+local function delete_project(project)
+  local answer = vim.fn.confirm(
+    "Delete project permanently?\n\n"
+      .. project.path
+      .. "\n\nThis recursively deletes all workspaces and files. "
+      .. "Its tmux sessions and aicontext process will also be stopped.",
+    "&Delete\n&Cancel",
+    2,
+    "Warning"
+  )
+  if answer ~= 1 then
+    return
+  end
+
+  for _, workspace in ipairs(workspaces(project)) do
+    local session = tmux_name(workspace)
+    if tmux_ok({ "has-session", "-t", session }) then
+      tmux_ok({ "kill-session", "-t", session })
+    end
+  end
+
+  local pid = aicontext_pid(project)
+  if pid then
+    vim.uv.kill(pid, "sigterm")
+  end
+  vim.fn.delete(process_file(project))
+
+  if vim.fn.delete(project.path, "rf") ~= 0 then
+    vim.notify("Could not delete project: " .. project.name, vim.log.levels.ERROR)
+    return
+  end
+
+  if state.selected_project and state.selected_project.path == project.path then
+    state.selected_project = nil
+    state.selected_workspace = nil
+  end
+  clear_terminal()
+  refresh()
+  vim.notify("Deleted project: " .. project.name)
+end
+
 local function select_current()
   local item = vim.b.agents_items and vim.b.agents_items[vim.fn.line(".")]
   if not item then
@@ -599,6 +672,15 @@ function M.open()
   vim.keymap.set("n", "<CR>", select_current, { buffer = state.panel_buf, desc = "Agents select" })
   vim.keymap.set("n", "<LeftMouse>", select_current, { buffer = state.panel_buf, desc = "Agents select" })
   vim.keymap.set("n", "R", refresh, { buffer = state.panel_buf, desc = "Agents refresh" })
+  vim.keymap.set("n", "p", create_project, { buffer = state.panel_buf, desc = "Agents new project" })
+  vim.keymap.set("n", "D", function()
+    local item = vim.b.agents_items and vim.b.agents_items[vim.fn.line(".")]
+    if item and item.kind == "project" then
+      delete_project(item.project)
+    else
+      vim.notify("Select a project first", vim.log.levels.WARN)
+    end
+  end, { buffer = state.panel_buf, desc = "Agents delete project" })
   vim.keymap.set("n", "o", function() with_workspace(function(workspace) create_window(workspace, "opencode") end) end, { buffer = state.panel_buf, desc = "Agents new opencode" })
   vim.keymap.set("n", "c", function() with_workspace(function(workspace) create_window(workspace, "code") end) end, { buffer = state.panel_buf, desc = "Agents open VS Code" })
   vim.keymap.set("n", "t", function() with_workspace(function(workspace) create_window(workspace, "terminal") end) end, { buffer = state.panel_buf, desc = "Agents new terminal" })
