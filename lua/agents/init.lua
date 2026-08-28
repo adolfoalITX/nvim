@@ -326,6 +326,7 @@ local function attach(workspace, window)
 
   local previous_buf = state.terminal_buf
   local terminal_buf = vim.api.nvim_create_buf(false, false)
+  vim.bo[terminal_buf].scrollback = 10000
   vim.api.nvim_win_set_buf(state.terminal_win, terminal_buf)
   state.terminal_buf = terminal_buf
   local active_window
@@ -485,6 +486,8 @@ local function show_help()
     " o              New OpenCode session",
     " c              Open workspace in VS Code",
     " t              New terminal session",
+    " Ctrl-\\ Ctrl-n   Terminal scroll mode",
+    " i              Return to terminal input",
     " r              Rename selected session",
     " d              Close selected session",
     " a / x          Start / stop aicontext",

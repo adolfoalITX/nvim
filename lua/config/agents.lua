@@ -31,6 +31,10 @@ end
 
 vim.api.nvim_create_autocmd("TermOpen", {
   callback = function(event)
+    vim.keymap.set("t", "<C-\\><C-n>", [[<C-\><C-n>]], {
+      buffer = event.buf,
+      desc = "Terminal normal mode",
+    })
     vim.keymap.set("t", "<leader>t<Esc>", [[<C-\><C-n>]], {
       buffer = event.buf,
       desc = "Terminal normal mode",

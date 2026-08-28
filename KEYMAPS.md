@@ -28,7 +28,14 @@ Cada workspace usa una sesión tmux persistente. Cada agente o terminal es una v
 - `<leader>ax`: detener el proceso `aicontext console` del proyecto seleccionado
 - `<leader>aD`: cerrar todas las sesiones tmux de agentes y sus terminales
 - `<C-w>h/j/k/l` o `<C-w>` con flechas: cambiar entre paneles, también desde una terminal
+- `<C-\><C-n>`: salir al modo normal de la terminal para consultar el historial
 - `<leader>t<Esc>`: salir del modo terminal sin cerrar la sesión
+
+### Terminal central
+
+- `<C-\><C-n>`: entrar en modo normal para desplazarse por las últimas 10.000 líneas
+- `j`/`k`, `<C-u>`/`<C-d>` o `/`: navegar o buscar en el historial desde el modo normal
+- `i`: volver al modo de entrada de la terminal
 
 ### Panel `Agents`
 
