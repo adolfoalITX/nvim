@@ -1,0 +1,18 @@
+KEYMAPS.md
+  h_2ac96fee03dfee 31,34-39
+lua/agents/init.lua
+  h_2ac96fee03dfee 329,489-490
+lua/config/agents.lua
+  h_2ac96fee03dfee 34-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5bb2811c3a691cf9f5de7bdfe0e263af48d8df19",
+  "prompts": {},
+  "humans": {
+    "h_2ac96fee03dfee": {
+      "author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
