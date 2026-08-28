@@ -173,7 +173,15 @@ local function open_aicontext(info)
     vim.notify("aicontext is already running, but its URL was not recorded", vim.log.levels.WARN)
     return
   end
-  vim.fn.jobstart({ "gio", "open", "http://127.0.0.1:" .. info.port }, { detach = true })
+  local url = "http://127.0.0.1:" .. info.port
+  local opener = vim.fn.executable("gio") == 1 and { "gio", "open", url }
+    or vim.fn.executable("xdg-open") == 1 and { "xdg-open", url }
+    or vim.fn.executable("open") == 1 and { "open", url }
+  if not opener then
+    vim.notify("No URL opener found for aicontext", vim.log.levels.ERROR)
+    return
+  end
+  vim.fn.jobstart(opener, { detach = true })
 end
 
 local function project_status(project)
@@ -182,7 +190,7 @@ local function project_status(project)
 end
 
 local function project_label(project)
-  return project.name:sub(1, 2):upper()
+  return project.name:sub(1, 4):upper()
 end
 
 local function refresh()
@@ -293,6 +301,8 @@ end
 local function attach(workspace, window)
   if window and window.kind == "code" then
     focus_vscode(workspace)
+    tmux_ok({ "kill-window", "-t", tmux_name(workspace) .. ":" .. window.index })
+    refresh()
     return
   end
   local session = ensure_tmux_session(workspace)
@@ -342,6 +352,11 @@ local function attach(workspace, window)
 end
 
 local function create_window(workspace, kind)
+  if kind == "code" then
+    focus_vscode(workspace)
+    return
+  end
+
   local session = tmux_name(workspace)
   local exists = tmux_ok({ "has-session", "-t", session })
   local arguments
@@ -352,8 +367,6 @@ local function create_window(workspace, kind)
   end
   if kind == "opencode" then
     vim.list_extend(arguments, { "-n", "opencode", "opencode" })
-  elseif kind == "code" then
-    vim.list_extend(arguments, { "-n", "code", "code .; exec \"$SHELL\"" })
   else
     table.insert(arguments, "-n")
     table.insert(arguments, "terminal")
@@ -361,15 +374,36 @@ local function create_window(workspace, kind)
   if tmux_ok(arguments) then
     local target = exists and (session .. ":") or (session .. ":0")
     tmux_ok({ "set-option", "-w", "-t", target, "@agents_type", kind })
-    if kind == "code" then
-      focus_vscode(workspace)
-      refresh()
-    else
-      attach(workspace)
-    end
+    attach(workspace)
   else
     vim.notify("Could not create tmux window", vim.log.levels.ERROR)
   end
+end
+
+local function open_default_nvim(workspace)
+  if vim.fn.executable("wt.exe") ~= 1 then
+    vim.notify("Windows Terminal (wt.exe) is not available", vim.log.levels.ERROR)
+    return
+  end
+  local distro = vim.env.WSL_DISTRO_NAME
+  if not distro or distro == "" then
+    vim.notify("Opening default Neovim in Windows Terminal requires WSL", vim.log.levels.ERROR)
+    return
+  end
+  vim.fn.jobstart({
+    "wt.exe",
+    "-w",
+    "new",
+    "cmd.exe",
+    "/c",
+    "wsl.exe",
+    "-d",
+    distro,
+    "--cd",
+    workspace.path,
+    "--exec",
+    vim.v.progpath,
+  }, { detach = true })
 end
 
 local function kill_window(workspace, window)
@@ -444,8 +478,10 @@ local function show_help()
   local lines = {
     " Agents shortcuts",
     " Enter / Click  Expand or open",
+    " q              Close panel",
     " p              New project",
     " D              Delete selected project",
+    " n              Open default Neovim",
     " o              New OpenCode session",
     " c              Open workspace in VS Code",
     " t              New terminal session",
@@ -681,6 +717,7 @@ function M.open()
       vim.notify("Select a project first", vim.log.levels.WARN)
     end
   end, { buffer = state.panel_buf, desc = "Agents delete project" })
+  vim.keymap.set("n", "n", function() with_workspace(open_default_nvim) end, { buffer = state.panel_buf, desc = "Agents open default Neovim" })
   vim.keymap.set("n", "o", function() with_workspace(function(workspace) create_window(workspace, "opencode") end) end, { buffer = state.panel_buf, desc = "Agents new opencode" })
   vim.keymap.set("n", "c", function() with_workspace(function(workspace) create_window(workspace, "code") end) end, { buffer = state.panel_buf, desc = "Agents open VS Code" })
   vim.keymap.set("n", "t", function() with_workspace(function(workspace) create_window(workspace, "terminal") end) end, { buffer = state.panel_buf, desc = "Agents new terminal" })

@@ -131,7 +131,7 @@ install_base_dependencies() {
   case "$pm" in
     apt)
       install_packages "$pm" \
-        git curl unzip tar gzip build-essential make ripgrep fd-find npm cargo luarocks xclip
+        git curl unzip tar gzip build-essential make ripgrep fd-find npm cargo luarocks xclip tmux
       if ! need_cmd fd && need_cmd fdfind; then
         mkdir -p "$HOME/.local/bin"
         ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
@@ -139,19 +139,19 @@ install_base_dependencies() {
       ;;
     dnf)
       install_packages "$pm" \
-        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd-find npm cargo luarocks xclip
+        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd-find npm cargo luarocks xclip tmux
       ;;
     pacman)
       install_packages "$pm" \
-        git curl unzip tar gzip base-devel ripgrep fd npm cargo luarocks xclip
+        git curl unzip tar gzip base-devel ripgrep fd npm cargo luarocks xclip tmux
       ;;
     zypper)
       install_packages "$pm" \
-        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd npm cargo luarocks xclip
+        git curl unzip tar gzip gcc gcc-c++ make ripgrep fd npm cargo luarocks xclip tmux
       ;;
     brew)
       install_packages "$pm" \
-        git curl unzip gnu-tar gzip make ripgrep fd node rust luarocks neovim
+        git curl unzip gnu-tar gzip make ripgrep fd node rust luarocks neovim tmux
       ;;
   esac
 }
@@ -206,6 +206,15 @@ ensure_url_opener() {
   esac
 
   has_url_opener || fail "No URL opener found after installation"
+}
+
+warn_missing_agents_commands() {
+  local command
+  for command in aicontext opencode code; do
+    if ! need_cmd "$command"; then
+      log "WARNING: '$command' is not installed; the corresponding agents action will be unavailable."
+    fi
+  done
 }
 
 install_neovim_from_tarball() {
@@ -412,11 +421,13 @@ main() {
   need_cmd git || fail "git is required"
   need_cmd curl || fail "curl is required"
   need_cmd rg || fail "ripgrep is required"
+  need_cmd tmux || fail "tmux is required for the agents profile"
   need_cmd tree-sitter || fail "tree-sitter CLI is required"
   need_cmd java || fail "Java is required for jdtls"
   need_cmd mvn || fail "Maven is required for Java projects"
 
   bootstrap_neovim
+  warn_missing_agents_commands
 
   log "Installation finished"
   log "Run 'nvim' and ':checkhealth' to verify the environment"

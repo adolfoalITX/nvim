@@ -33,8 +33,10 @@ Cada workspace usa una sesión tmux persistente. Cada agente o terminal es una v
 ### Panel `Agents`
 
 - `Enter` o clic: expandir proyecto/workspace o enfocar la sesión tmux seleccionada
+- `q`: cerrar el panel `Agents` sin detener sesiones
 - `p`: crear un proyecto y su carpeta `runtimes`
 - `D`: borrar recursivamente el proyecto seleccionado tras confirmación
+- `n`: abrir Windows Terminal con Neovim en el perfil `default` dentro del workspace
 - `r`: renombrar la sesión tmux seleccionada
 - `R`: refrescar proyectos, workspaces y sesiones
 - `o`: crear una ventana tmux con `opencode` en el workspace seleccionado
