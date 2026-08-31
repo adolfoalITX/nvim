@@ -90,11 +90,28 @@ local function tmux_ok(arguments)
   return vim.v.shell_error == 0
 end
 
+local function configure_tmux_mouse(session)
+  tmux_ok({ "set-option", "-t", session, "mouse", "on" })
+  tmux_ok({
+    "bind-key",
+    "-T",
+    "root",
+    "WheelUpPane",
+    "if-shell",
+    "-F",
+    "#{||:#{==:#{@agents_type},terminal},#{&&:#{==:#{@agents_type},},#{==:#{window_name},terminal}}}",
+    "if-shell -F '#{pane_in_mode}' 'send-keys -X -N 5 scroll-up' 'copy-mode -e; send-keys -X -N 5 scroll-up'",
+    "if-shell -F '#{||:#{pane_in_mode},#{mouse_any_flag}}' 'send-keys -M' 'copy-mode -e'",
+  })
+end
+
 local function ensure_tmux_session(workspace)
   local name = tmux_name(workspace)
   if not tmux_ok({ "has-session", "-t", name }) then
     tmux_ok({ "new-session", "-d", "-s", name, "-c", workspace.path, "-n", "terminal" })
+    tmux_ok({ "set-option", "-w", "-t", name .. ":0", "@agents_type", "terminal" })
   end
+  configure_tmux_mouse(name)
   return name
 end
 
@@ -375,6 +392,7 @@ local function create_window(workspace, kind)
   if tmux_ok(arguments) then
     local target = exists and (session .. ":") or (session .. ":0")
     tmux_ok({ "set-option", "-w", "-t", target, "@agents_type", kind })
+    configure_tmux_mouse(session)
     attach(workspace)
   else
     vim.notify("Could not create tmux window", vim.log.levels.ERROR)
