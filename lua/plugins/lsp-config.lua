@@ -10,7 +10,7 @@ return {
       "neovim/nvim-lspconfig",
     },
     opts = {
-      ensure_installed = { "lua_ls", "jdtls"},
+      ensure_installed = { "lua_ls", "jdtls", "pyright" },
       automatic_enable = {
         exclude = { "jdtls" },
       },
@@ -95,6 +95,16 @@ return {
         },
       })
       vim.lsp.enable("lua_ls")
+
+      vim.lsp.config("pyright", {
+        capabilities = capabilities,
+        cmd = {
+          "node",
+          vim.fn.stdpath("data") .. "/mason/packages/pyright/node_modules/pyright/langserver.index.js",
+          "--stdio",
+        },
+      })
+      vim.lsp.enable("pyright")
     end,
   },
   {

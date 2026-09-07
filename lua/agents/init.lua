@@ -101,7 +101,7 @@ local function configure_tmux_mouse(session)
     "-F",
     "#{||:#{==:#{@agents_type},terminal},#{&&:#{==:#{@agents_type},},#{==:#{window_name},terminal}}}",
     "if-shell -F '#{pane_in_mode}' 'send-keys -X -N 5 scroll-up' 'copy-mode -e; send-keys -X -N 5 scroll-up'",
-    "if-shell -F '#{||:#{pane_in_mode},#{mouse_any_flag}}' 'send-keys -M' 'copy-mode -e'",
+    "send-keys -M",
   })
 end
 
@@ -325,6 +325,9 @@ local function attach(workspace, window)
   local session = ensure_tmux_session(workspace)
   if window then
     tmux_ok({ "select-window", "-t", session .. ":" .. window.index })
+    if window.kind == "opencode" or (window.kind == "" and window.name == "opencode") then
+      tmux_ok({ "send-keys", "-t", session .. ":" .. window.index, "-X", "cancel" })
+    end
   end
   vim.cmd("cd " .. vim.fn.fnameescape(workspace.path))
   if not state.terminal_win or not vim.api.nvim_win_is_valid(state.terminal_win) then

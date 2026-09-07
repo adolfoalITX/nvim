@@ -309,8 +309,12 @@ Atajos útiles dentro del panel, usando defaults del plugin:
 - `Ctrl-w s`: split horizontal
 - `Ctrl-w v`: split vertical
 - `Ctrl-w c`: cerrar ventana
+- `Ctrl-o`: volver a la ubicación anterior del historial de saltos
+- `Ctrl-i`: avanzar a la siguiente ubicación del historial de saltos
+- `Ctrl-^`: alternar entre el buffer actual y el último usado
 - `:bnext`: siguiente buffer
 - `:bprev`: buffer anterior
+- `<leader>bp`: buffer anterior
 
 ## Flujos Recomendados (`default`)
 
