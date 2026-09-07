@@ -1,0 +1,20 @@
+KEYMAPS.md
+  h_2ac96fee03dfee 312-314,317
+lazy-lock.json
+  h_2ac96fee03dfee 11,15,17,22,25
+lua/agents/init.lua
+  h_2ac96fee03dfee 104,328-330
+lua/plugins/lsp-config.lua
+  h_2ac96fee03dfee 13,98-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "12544374dc118dc68e8c0a93beca307cd30be709",
+  "prompts": {},
+  "humans": {
+    "h_2ac96fee03dfee": {
+      "author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
