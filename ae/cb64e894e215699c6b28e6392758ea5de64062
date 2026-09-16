@@ -1,0 +1,19 @@
+after/ftplugin/java.lua
+  s_5f5c1b12a4d1b8::t_750d0573ed1cde 44,46-50,52-60,64,73-79,89,95-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aecb64e894e215699c6b28e6392758ea5de64062",
+  "prompts": {},
+  "sessions": {
+    "s_5f5c1b12a4d1b8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f83218eb5ffepv9wamGQ4KUXOi",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
