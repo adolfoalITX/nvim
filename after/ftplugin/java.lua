@@ -41,26 +41,27 @@ local function find_lombok_jar()
   if env_lombok and env_lombok ~= "" and vim.uv.fs_stat(env_lombok) then
     return env_lombok
   end
+end
 
-  local mason_lombok = vim.fn.stdpath("data") .. "/mason/packages/jdtls/lombok.jar"
-  if vim.uv.fs_stat(mason_lombok) then
-    return mason_lombok
-  end
+local function workspace_dir_for(root_dir, java)
+  -- A workspace created with a different JDK can retain an incompatible model.
+  local project_key = (root_dir .. "-" .. java .. "-v2"):gsub("[/\\:]", "%%")
+  return vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_key
+end
 
-  local jars = vim.fn.glob(vim.fn.expand("~/.m2/repository/org/projectlombok/lombok/*/lombok-*.jar"), false, true)
-  for i = #jars, 1, -1 do
-    local jar = jars[i]
-    if jar:match("%-sources%.jar$") == nil and jar:match("%-javadoc%.jar$") == nil then
-      return jar
+local function java_for_project(root_dir)
+  local asdf = vim.fn.exepath("asdf")
+  if asdf ~= "" then
+    local result = vim.system({ asdf, "which", "java" }, { cwd = root_dir, text = true }):wait()
+    if result.code == 0 then
+      local java = vim.trim(result.stdout)
+      if java ~= "" and vim.uv.fs_stat(java) then
+        return java
+      end
     end
   end
 
-  return nil
-end
-
-local function workspace_dir_for(root_dir)
-  local project_key = root_dir:gsub("[/\\:]", "%%")
-  return vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_key
+  return vim.fn.exepath("java")
 end
 
 local root_dir = find_root_dir()
@@ -69,6 +70,13 @@ if not root_dir then
 end
 
 local cmd = { "jdtls", "--jvm-arg=-Xms512m", "--jvm-arg=-Xmx2g" }
+local java = java_for_project(root_dir)
+
+if java == "" then
+  return
+end
+
+table.insert(cmd, "--java-executable=" .. java)
 
 local lombok_jar = find_lombok_jar()
 
@@ -78,12 +86,33 @@ if lombok_jar then
 end
 
 table.insert(cmd, "-data")
-table.insert(cmd, workspace_dir_for(root_dir))
+table.insert(cmd, workspace_dir_for(root_dir, java))
 
 jdtls.start_or_attach({
   cmd = cmd,
   root_dir = root_dir,
   capabilities = capabilities,
+  handlers = {
+    ["language/status"] = function(_, result, ctx)
+      if result.type ~= "ServiceReady" then
+        return
+      end
+
+      local client = vim.lsp.get_client_by_id(ctx.client_id)
+      if not client then
+        return
+      end
+
+      -- Prime the index after Maven import so Trouble does not query it too early.
+      for bufnr in pairs(client.attached_buffers) do
+        if vim.bo[bufnr].filetype == "java" then
+          client:request("textDocument/documentSymbol", {
+            textDocument = vim.lsp.util.make_text_document_params(bufnr),
+          }, nil, bufnr)
+        end
+      end
+    end,
+  },
   init_options = {
     bundles = {},
     extendedClientCapabilities = jdtls.extendedClientCapabilities,

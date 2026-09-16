@@ -96,13 +96,46 @@ return {
       })
       vim.lsp.enable("lua_ls")
 
+      local function python_for_project(root_dir)
+        local asdf = vim.fn.exepath("asdf")
+        if asdf ~= "" then
+          local result = vim.system({ asdf, "which", "python" }, { cwd = root_dir, text = true }):wait()
+          if result.code == 0 then
+            local python = vim.trim(result.stdout)
+            if python ~= "" and vim.uv.fs_stat(python) then
+              return python
+            end
+          end
+        end
+
+        return vim.fn.exepath("python3")
+      end
+
       vim.lsp.config("pyright", {
         capabilities = capabilities,
+        root_markers = {
+          "pyrightconfig.json",
+          "pyproject.toml",
+          "setup.py",
+          "setup.cfg",
+          "requirements.txt",
+          "Pipfile",
+          ".tool-versions",
+          ".git",
+        },
         cmd = {
           "node",
           vim.fn.stdpath("data") .. "/mason/packages/pyright/node_modules/pyright/langserver.index.js",
           "--stdio",
         },
+        before_init = function(_, config)
+          local python = python_for_project(config.root_dir)
+          if python ~= "" then
+            config.settings = vim.tbl_deep_extend("force", config.settings or {}, {
+              python = { pythonPath = python },
+            })
+          end
+        end,
       })
       vim.lsp.enable("pyright")
     end,

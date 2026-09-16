@@ -101,6 +101,10 @@ Iniciar con `nvim`. Los atajos de las siguientes secciones no están disponibles
 - `<leader>cs`: document symbols en `Trouble`
 - `<leader>ct`: type definition
 
+En proyectos Python, `pyright` resuelve el intérprete con `asdf` desde la raíz del proyecto. `.tool-versions` también delimita esa raíz: al cambiar de buffer entre repositorios, cada uno usa automáticamente su propia versión de Python. Si no existe, usa `python3` disponible en `PATH`.
+
+En proyectos Java, `jdtls` resuelve el JDK con `asdf` desde la raíz del proyecto. Al cambiar de repositorio, inicia el servidor con el `java` definido por su `.tool-versions`; si no existe, usa `java` disponible en `PATH`.
+
 ### Diagnostics
 
 - `<leader>db`: diagnósticos del buffer actual en `Trouble`
