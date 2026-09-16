@@ -20,6 +20,7 @@ NVIM_PROJECTS_ROOT/
 ```
 
 Cada workspace usa una sesión tmux persistente. Cada agente o terminal es una ventana de esa sesión.
+El panel muestra un semáforo verde para `aicontext` y uno azul para recursos tmux abiertos (terminales u OpenCode); en cada workspace se muestra el semáforo azul de sus recursos.
 
 ### Globales
 

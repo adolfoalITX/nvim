@@ -19,6 +19,7 @@ local highlights = {
   code = "AgentsVSCode",
   terminal = "AgentsTerminal",
   running = "AgentsRunning",
+  resources_running = "AgentsResourcesRunning",
   stopped = "AgentsStopped",
 }
 
@@ -206,6 +207,20 @@ local function project_status(project)
   return pid and "●" or "○", pid and highlights.running or highlights.stopped
 end
 
+local function workspace_status(workspace)
+  local active = #tmux_windows(workspace) > 0
+  return active and "●" or "○", active and highlights.resources_running or highlights.stopped
+end
+
+local function project_resources_active(project)
+  for _, workspace in ipairs(workspaces(project)) do
+    if #tmux_windows(workspace) > 0 then
+      return true
+    end
+  end
+  return false
+end
+
 local function project_label(project)
   return project.name:sub(1, 4):upper()
 end
@@ -234,26 +249,32 @@ local function refresh()
     for _, project in ipairs(projects()) do
       local selected = state.selected_project and state.selected_project.path == project.path
       local label = "[ " .. project_label(project) .. " ]"
-      local status, status_highlight = project_status(project)
-      local line = "  " .. label .. "  " .. status
+      local aicontext_status, aicontext_highlight = project_status(project)
+      local resources_active = project_resources_active(project)
+      local resources_status = resources_active and "●" or "○"
+      local resources_highlight = resources_active and highlights.resources_running or highlights.stopped
+      local line = "  " .. label .. "  " .. aicontext_status .. "  " .. resources_status
       add(line, {
         kind = "project",
         project = project,
       }, {
         { 2, 2 + #label, highlights.project },
-        { #line - #status, #line, status_highlight },
+        { #line - 7, #line - 4, aicontext_highlight },
+        { #line - 3, #line, resources_highlight },
       })
       if selected then
         for _, workspace in ipairs(workspaces(project)) do
           local active = state.selected_workspace and state.selected_workspace.path == workspace.path
-          local line = "  ├─ " .. workspace.name
+          local resources_status, resources_highlight = workspace_status(workspace)
+          local line = "  ├─ " .. workspace.name .. "  " .. resources_status
           add(line, {
             kind = "workspace",
             project = project,
             workspace = workspace,
           }, {
             { 2, 5, highlights.branch },
-            { 5, -1, active and highlights.active_workspace or highlights.workspace },
+            { 5, #line - 5, active and highlights.active_workspace or highlights.workspace },
+            { #line - 3, #line, resources_highlight },
           })
           if active then
             local windows = tmux_windows(workspace)
@@ -299,6 +320,7 @@ local function setup_highlights()
   vim.api.nvim_set_hl(0, highlights.code, { fg = "#89b4fa" })
   vim.api.nvim_set_hl(0, highlights.terminal, { fg = "#fab387" })
   vim.api.nvim_set_hl(0, highlights.running, { fg = "#a6e3a1", bold = true })
+  vim.api.nvim_set_hl(0, highlights.resources_running, { fg = "#89b4fa", bold = true })
   vim.api.nvim_set_hl(0, highlights.stopped, { fg = "#6c7086" })
 end
 
