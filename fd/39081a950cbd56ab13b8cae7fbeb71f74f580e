@@ -1,0 +1,19 @@
+lua/plugins/rest.lua
+  s_6de9cc0469b38c::t_6b12e3d69a2fb3 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd39081a950cbd56ab13b8cae7fbeb71f74f580e",
+  "prompts": {},
+  "sessions": {
+    "s_6de9cc0469b38c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f132dfc4affeYYxWHTjsPbTVJg",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Adolfo Alvarez <adolfoal@inditex.com>"
+    }
+  }
+}
