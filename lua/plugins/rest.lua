@@ -1,6 +1,6 @@
 return {
   {
-    "mistweaverco/kulala.nvim",
+    "andycowan/kulala.nvim",
     ft = { "http", "rest" },
     keys = {
       {
